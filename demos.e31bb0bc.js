@@ -82848,6 +82848,8 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
  */
 const stats = new _stats.default();
 let dentonMode = false;
+const dentonImg = new Image();
+dentonImg.src = "jc.png";
 const state = {
   video: null,
   stream: null,
@@ -83389,9 +83391,14 @@ function drawPoses(personOrPersonPartSegmentation, flipHorizontally, ctx) {
 
       (0, _demo_util.drawKeypoints)(pose.keypoints, 0.1, ctx);
       (0, _demo_util.drawSkeleton)(pose.keypoints, 0.1, ctx);
-      drawDenton(pose.keypoints[0].position.x, pose.keypoints[0].position.y, ctx);
+      drawDenton(pose.keypoints, ctx);
     });
   }
+}
+
+function drawAnimationTest(pose, ctx) {
+  const xSpeed = Math.random() * 10 - 5;
+  const ySpeed = Math.random() * 10 - 5;
 }
 
 function drawDenton(pose, ctx) {
@@ -83399,32 +83406,47 @@ function drawDenton(pose, ctx) {
     return;
   }
 
-  function calculateDistance(point1, point2) {
-    const deltaX = Math.pow(point1.x - point2.x, 2);
-    const deltaY = Math.pow(point1.y - point2.y, 2);
+  function calcDeltaX(point1, point2) {
+    return point1.x - point2.x;
+  }
+
+  function calcDeltaY(point1, point2) {
+    return point1.y - point2.y;
+  }
+
+  function calculateEyeDistance(eyeDeltaX, eyeDeltaY) {
+    const deltaX = eyeDeltaX * eyeDeltaX;
+    const deltaY = eyeDeltaY * eyeDeltaY;
     return Math.sqrt(deltaX + deltaY);
   }
 
   function scaleDenton(eyeDistance) {
     // found this number by trial and error
-    const SCALE_FACTOR = 100;
+    const SCALE_FACTOR = 90;
     return eyeDistance / SCALE_FACTOR;
-  }
+  } // this is simply the resolution of jc.png
+
 
   const DENTON_WIDTH = 238;
   const DENTON_HEIGHT = 413;
   const nose = pose[0].position;
   const leftEye = pose[1].position;
   const rightEye = pose[2].position;
-  const eyeDistance = calculateDistance(leftEye, rightEye);
+  const eyeDeltaX = calcDeltaX(leftEye, rightEye);
+  const eyeDeltaY = calcDeltaY(leftEye, rightEye);
+  const headAngle = Math.atan(eyeDeltaY / eyeDeltaX);
+  const eyeDistance = calculateEyeDistance(eyeDeltaX, eyeDeltaY);
   const scaleFactor = scaleDenton(eyeDistance);
   const dentonWidth = DENTON_WIDTH * scaleFactor;
   const dentonHeight = DENTON_HEIGHT * scaleFactor;
   const dentonX = nose.x - dentonWidth / 2;
   const dentonY = nose.y - dentonHeight / 2;
-  const denton = new Image();
-  denton.src = "jc.png";
-  ctx.drawImage(denton, dentonX, dentonY, dentonWidth, dentonHeight);
+  ctx.translate(dentonX, dentonY);
+  ctx.setTransform(scaleFactor, 0, 0, scaleFactor, dentonX, dentonY);
+  ctx.rotate(headAngle);
+  ctx.drawImage(dentonImg, 0, 0);
+  ctx.translate(-dentonX, -dentonY);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 }
 
 async function loadBodyPix() {
@@ -83506,7 +83528,7 @@ function segmentBodyInRealTime() {
             break;
 
           case 'partMap':
-            bodyPix.drawMask(canvas, state.video, coloredPartImageData, guiState.opacity, maskBlurAmount, flipHorizontally);
+            bodyPix.drawMask(canvas, state.video, coloredPartImageData, guiState.partMap.opacity, maskBlurAmount, flipHorizontally);
             break;
 
           case 'blurBodyPart':
