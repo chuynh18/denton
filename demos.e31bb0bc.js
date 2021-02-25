@@ -83543,7 +83543,6 @@ function segmentBodyInRealTime() {
         break;
     } // End monitoring code for frames per second
 
-
     stats.end();
     requestAnimationFrame(bodySegmentationFrame);
   }
@@ -83553,7 +83552,6 @@ function segmentBodyInRealTime() {
 /**
  * Kicks off the demo.
  */
-
 
 async function bindPage() {
   // Load the BodyPix model weights with architecture 0.75
@@ -83571,4 +83569,3 @@ navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia 
 
 bindPage();
 },{"@tensorflow/tfjs-backend-webgl":"node_modules/@tensorflow/tfjs-backend-webgl/dist/index.js","@tensorflow-models/body-pix":"node_modules/@tensorflow-models/body-pix/index.js","dat.gui":"node_modules/dat.gui/build/dat.gui.module.js","stats.js":"node_modules/stats.js/build/stats.min.js","./demo_util":"demo_util.js","./part_color_scales":"part_color_scales.js"}]},{},["index.js"], null)
-//# sourceMappingURL=/demos.e31bb0bc.js.map
